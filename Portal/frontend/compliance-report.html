@@ -279,7 +279,7 @@
 <!-- Image Container -->
 <div class="absolute inset-0 p-4 flex items-center justify-center">
 <div class="relative max-w-full max-h-full">
-<img alt="Detergent Label Scan" class="max-w-full max-h-full object-contain shadow-md" data-alt="A high-resolution photograph of the back panel of a typical laundry detergent box. The label features dense, small text containing product details like Manufacturer, MRP, Net Weight, and Consumer Care details. The lighting is even and bright, mimicking a studio product shot or a high-quality scan intended for optical character recognition. The aesthetic is clean, clinical, and objective." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCXCkcwseihh6wbLAUghtNjK4kELYDeBXfYy03qFcy8KOoq-xJVeX1Ms-Z-3rx1U6sWvx6Hk78Z4HlxeDKsOQKiqrJL2IltT6S1j7Lh_52u_XCRuUzsK9O_fdB2470l4c4x6pXJVGWGM9tqGhOxRPWvFd56cyI8ix912MDbNQ0z6kDeuCCLc-GMSkedDt_odiEURQrDySpRv9VZcCp9x-PozzQf37_BTSUiJTmap8uTXgc5H6zqn7m"/>
+<img alt="Product label scan" class="max-w-full max-h-full object-contain shadow-md" id="source-evidence-image"/>
 <!-- Bounding Boxes Overlay (Simulated) -->
 <div class="bounding-box" style="top: 15%; left: 10%; width: 40%; height: 8%;" title="Manufacturer Details Detected">
 <span class="absolute -top-6 left-0 bg-primary text-on-primary text-[10px] px-1 font-mono rounded-sm shadow">MANUFACTURER</span>
@@ -347,6 +347,9 @@
             document.getElementById('report-breadcrumb').textContent = 'Report #' + scan.id;
             document.getElementById('report-product-name').textContent = scan.productName;
             document.getElementById('report-subtitle').textContent = scan.manufacturer + ' • ' + scan.category + ' • Automated packaging scan against Legal Metrology Rules, 2011.';
+            var sourceImage = document.getElementById('source-evidence-image');
+            sourceImage.src = (scan.sourceImageUrl ? 'http://localhost:8000' + scan.sourceImageUrl : 'http://localhost:8000/api/scans/' + encodeURIComponent(scan.id) + '/image');
+            sourceImage.alt = scan.fileName ? 'Original product label: ' + scan.fileName : 'Original product label scan';
 
             var score = scan.score == null ? 0 : scan.score;
             var badge = document.getElementById('report-score-badge');

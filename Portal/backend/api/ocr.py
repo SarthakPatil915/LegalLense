@@ -14,8 +14,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
-from fastapi.responses import JSONResponse
+from bson import ObjectId
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
+from gridfs import GridFS
+from gridfs.errors import NoFile
 
 from backend.database import get_database
 from backend.api.auth import official_user
@@ -153,6 +156,9 @@ async def create_scan(
     user: dict[str, Any] = Depends(official_user),
 ):
     """Run OCR and persist the original scan record in MongoDB."""
+    original_contents = await file.read() if file is not None else b""
+    if file is not None:
+        await file.seek(0)
     response = await run_ocr(file)
     if response.status_code != 200:
         return response
@@ -186,8 +192,18 @@ async def create_scan(
         "status": status_map[compliance.overall_status],
         "score": compliance.compliance_score,
     })
-    get_database().scans.insert_one(scan)
-    get_database().history.insert_one({
+    database = get_database()
+    image_id = GridFS(database, collection="scan_images").put(
+        original_contents,
+        filename=result.image,
+        content_type=file.content_type if file is not None else None,
+        scan_id=scan["id"],
+        user_id=user["_id"],
+    )
+    scan["sourceImageId"] = str(image_id)
+    scan["sourceImageUrl"] = f"/api/scans/{scan['id']}/image"
+    database.scans.insert_one(scan)
+    database.history.insert_one({
         "userId": user["_id"],
         "actionType": "scan_uploaded",
         "title": "Product label uploaded",
@@ -196,7 +212,7 @@ async def create_scan(
         "metadata": {"fileName": result.image, "category": scan["category"]},
         "createdAt": datetime.now(timezone.utc),
     })
-    logger.info("Persisted scan %s to MongoDB", scan["id"])
+    logger.info("Persisted scan %s and source image %s to MongoDB", scan["id"], image_id)
     return _public_scan(scan)
 
 
@@ -214,6 +230,21 @@ def get_scan(scan_id: str, user: dict[str, Any] = Depends(official_user)):
     if scan is None:
         return JSONResponse(status_code=404, content={"detail": "Scan not found"})
     return _public_scan(scan)
+
+
+@router.get("/api/scans/{scan_id}/image")
+def get_scan_image(scan_id: str, user: dict[str, Any] = Depends(official_user)):
+    """Stream the original label photo for an owned scan."""
+    scan = get_database().scans.find_one({"id": scan_id, "userId": user["_id"]}, {"sourceImageId": 1})
+    if scan is None or not scan.get("sourceImageId"):
+        raise HTTPException(status_code=404, detail="Source image not found")
+
+    try:
+        image = GridFS(get_database(), collection="scan_images").get(ObjectId(scan["sourceImageId"]))
+    except NoFile as exc:
+        raise HTTPException(status_code=404, detail="Source image not found") from exc
+
+    return StreamingResponse(image, media_type=image.content_type or "application/octet-stream")
 
 
 @router.get("/api/cases")
