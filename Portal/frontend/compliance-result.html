@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Compliance Result | LegalLense</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet"/>
+<style>
+body{font-family:Inter,sans-serif;background:#f8f9fa;color:#191c1d}.material-symbols-outlined{vertical-align:middle}.status{color:#006a6a}.status-fail{color:#ba1a1a}.status-manual{color:#9a6500}.status-partial{color:#9a6500}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="h-16 bg-[#00274a] text-white px-6 md:px-10 flex items-center justify-between">
+  <a href="official-dashboard.html" class="font-bold text-xl">LegalLense</a>
+  <a href="new-compliance-scan.html" class="text-sm font-semibold text-[#93f2f2]"><span class="material-symbols-outlined mr-1">add</span>New scan</a>
+</header>
+<main class="max-w-6xl mx-auto px-5 md:px-8 py-10">
+  <div id="empty" class="hidden bg-white border border-[#c3c6d0] rounded-lg p-10 text-center"><span class="material-symbols-outlined text-4xl text-[#737780]">description</span><h1 class="text-2xl font-bold text-[#00274a] mt-3">No compliance result loaded</h1><p class="text-[#42474f] mt-2">Run a scan to generate an auditable result from the OCR output.</p><a class="inline-flex mt-6 bg-[#006a6a] text-white px-5 py-3 rounded font-semibold" href="new-compliance-scan.html">Start a scan</a></div>
+  <div id="result-content" class="hidden">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8"><div><p class="text-xs uppercase tracking-widest text-[#006a6a] font-bold">Legal Metrology Compliance</p><h1 class="text-3xl md:text-4xl font-bold text-[#00274a] mt-2" id="title">Compliance result</h1></div><p class="text-sm text-[#42474f]">Ruleset <span id="ruleset" class="font-semibold"></span></p></div>
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8" id="summary"></section>
+    <div class="space-y-4" id="rules"></div>
+    <section class="mt-8 bg-[#edeeef] border border-[#c3c6d0] rounded-lg p-5 text-sm text-[#42474f]"><p class="font-bold text-[#00274a] mb-2">Audit trail</p><p>Document: <span id="document"></span></p><p>Engine: <span id="engine"></span> · Evaluated: <span id="evaluated"></span></p><p class="mt-3">OCR confidence is evidence quality, not legal compliance. “Not detected by OCR” does not confirm physical absence.</p></section>
+  </div>
+</main>
+<script>
+(function(){
+  var result = null;
+  try { result = JSON.parse(sessionStorage.getItem('legallense_compliance_result_v1') || 'null'); } catch (e) {}
+  var empty = document.getElementById('empty'), content = document.getElementById('result-content');
+  if (!result) { empty.classList.remove('hidden'); return; }
+  content.classList.remove('hidden');
+  var esc = function(value){ var div=document.createElement('div'); div.textContent=value == null ? '' : String(value); return div.innerHTML; };
+  var statusClass = function(status){ return status === 'NON_COMPLIANT' ? 'status-fail' : (status === 'NEEDS_MANUAL_VERIFICATION' || status === 'PARTIALLY_COMPLIANT' ? 'status-manual' : 'status'); };
+  document.getElementById('title').textContent = result.overall_status.replaceAll('_',' ' ) + ' · ' + result.compliance_score + '%';
+  document.getElementById('ruleset').textContent = result.ruleset_id + ' / v' + result.ruleset_version;
+  document.getElementById('document').textContent = result.document_id;
+  document.getElementById('engine').textContent = result.audit.engine_version;
+  document.getElementById('evaluated').textContent = result.audit.evaluated_at;
+  var stats = [['Score', result.compliance_score + '%'], ['Rules checked', result.summary.total_rules], ['Passed', result.summary.passed], ['Failed', result.summary.failed], ['Manual review', result.summary.manual_verification]];
+  document.getElementById('summary').innerHTML = stats.map(function(item){ return '<div class="bg-white border border-[#c3c6d0] rounded-lg p-4"><p class="text-xs uppercase tracking-wide text-[#737780]">'+item[0]+'</p><p class="text-2xl font-bold text-[#00274a] mt-2">'+item[1]+'</p></div>'; }).join('');
+  document.getElementById('rules').innerHTML = result.rule_results.map(function(rule){
+    var fields = Object.keys(rule.required_fields || {}).map(function(name){ var field=rule.required_fields[name]; return '<div class="flex justify-between gap-4 py-2 border-b border-[#e1e3e4] text-sm"><span>'+esc(name.replaceAll('_',' '))+'</span><strong class="'+statusClass(field.status)+'">'+esc(field.status.replaceAll('_',' '))+'</strong></div>'; }).join('');
+    var evidence = (rule.evidence_details || []).map(function(item){ return '<div class="mt-3 p-3 bg-[#f3f4f5] rounded"><p class="font-semibold">'+esc(item.requirement)+'</p><p class="text-[#42474f] mt-1">OCR: '+esc(item.ocr_evidence)+'</p><p class="text-[#42474f]">Validation: '+esc(item.validation)+' · '+esc(item.result)+'</p></div>'; }).join('');
+    return '<article class="bg-white border border-[#c3c6d0] rounded-lg overflow-hidden"><div class="p-5 flex flex-col md:flex-row md:items-start justify-between gap-3"><div><h2 class="font-bold text-lg text-[#00274a]">'+esc(rule.rule_name)+'</h2><p class="text-xs text-[#737780] mt-1">Rule: '+esc(rule.rule_id)+'</p></div><strong class="'+statusClass(rule.status)+'">'+esc(rule.status.replaceAll('_',' '))+'</strong></div><div class="px-5 pb-5"><p class="text-sm text-[#42474f]">'+esc(rule.explanation)+'</p>'+fields+'<details class="mt-4"><summary class="cursor-pointer text-sm font-semibold text-[#00274a]">View requirement, OCR evidence, validation</summary>'+evidence+'</details><p class="text-sm mt-4 text-[#42474f]"><strong>Recommended action:</strong> '+esc(rule.recommended_action)+'</p></div></article>';
+  }).join('');
+})();
+</script>
+</body></html>

@@ -1,0 +1,291 @@
+{
+  "success": true,
+  "image": "synthetic_label.webp",
+  "image_path": "backend\\test_images\\synthetic_label.webp",
+  "full_text": "HERBAL GLOW HANDWASH\nManufactured by: Sunrise Consumer Products Pvt. Ltd.\nAddress: Plot 14, Industrial Area, Pune, Maharashtra - 411019\nNet Quantity: 250 ml\nMRP: Rs. 149.00 (Incl. of all taxes)\nMfg Date: 03/2024\nBest Before: 24 months from Mfg Date\nConsumer Care: 1800-123-4567\nEmail: care@sunriseconsumer.in\nCountry of Origin: India",
+  "detections": [
+    {
+      "text": "HERBAL GLOW HANDWASH",
+      "confidence": 0.9994384050369263,
+      "bbox": [
+        38,
+        33,
+        511,
+        62
+      ],
+      "polygon": [
+        [
+          38,
+          33
+        ],
+        [
+          511,
+          33
+        ],
+        [
+          511,
+          62
+        ],
+        [
+          38,
+          62
+        ]
+      ]
+    },
+    {
+      "text": "Manufactured by: Sunrise Consumer Products Pvt. Ltd.",
+      "confidence": 0.9996024370193481,
+      "bbox": [
+        38,
+        121,
+        665,
+        148
+      ],
+      "polygon": [
+        [
+          38,
+          121
+        ],
+        [
+          665,
+          121
+        ],
+        [
+          665,
+          148
+        ],
+        [
+          38,
+          148
+        ]
+      ]
+    },
+    {
+      "text": "Address: Plot 14, Industrial Area, Pune, Maharashtra - 411019",
+      "confidence": 0.999683678150177,
+      "bbox": [
+        38,
+        160,
+        598,
+        183
+      ],
+      "polygon": [
+        [
+          38,
+          160
+        ],
+        [
+          598,
+          160
+        ],
+        [
+          598,
+          183
+        ],
+        [
+          38,
+          183
+        ]
+      ]
+    },
+    {
+      "text": "Net Quantity: 250 ml",
+      "confidence": 0.9996830224990845,
+      "bbox": [
+        38,
+        221,
+        273,
+        248
+      ],
+      "polygon": [
+        [
+          38,
+          221
+        ],
+        [
+          273,
+          221
+        ],
+        [
+          273,
+          248
+        ],
+        [
+          38,
+          248
+        ]
+      ]
+    },
+    {
+      "text": "MRP: Rs. 149.00 (Incl. of all taxes)",
+      "confidence": 0.9977201819419861,
+      "bbox": [
+        38,
+        261,
+        435,
+        287
+      ],
+      "polygon": [
+        [
+          38,
+          261
+        ],
+        [
+          435,
+          261
+        ],
+        [
+          435,
+          287
+        ],
+        [
+          38,
+          287
+        ]
+      ]
+    },
+    {
+      "text": "Mfg Date: 03/2024",
+      "confidence": 0.9992430210113525,
+      "bbox": [
+        38,
+        300,
+        249,
+        327
+      ],
+      "polygon": [
+        [
+          38,
+          300
+        ],
+        [
+          249,
+          300
+        ],
+        [
+          249,
+          327
+        ],
+        [
+          38,
+          327
+        ]
+      ]
+    },
+    {
+      "text": "Best Before: 24 months from Mfg Date",
+      "confidence": 0.9999129772186279,
+      "bbox": [
+        38,
+        341,
+        476,
+        368
+      ],
+      "polygon": [
+        [
+          38,
+          341
+        ],
+        [
+          476,
+          341
+        ],
+        [
+          476,
+          368
+        ],
+        [
+          38,
+          368
+        ]
+      ]
+    },
+    {
+      "text": "Consumer Care: 1800-123-4567",
+      "confidence": 0.9950106739997864,
+      "bbox": [
+        39,
+        402,
+        408,
+        425
+      ],
+      "polygon": [
+        [
+          39,
+          402
+        ],
+        [
+          408,
+          402
+        ],
+        [
+          408,
+          425
+        ],
+        [
+          39,
+          425
+        ]
+      ]
+    },
+    {
+      "text": "Email: care@sunriseconsumer.in",
+      "confidence": 0.9997944235801697,
+      "bbox": [
+        39,
+        443,
+        418,
+        467
+      ],
+      "polygon": [
+        [
+          39,
+          443
+        ],
+        [
+          418,
+          443
+        ],
+        [
+          418,
+          467
+        ],
+        [
+          39,
+          467
+        ]
+      ]
+    },
+    {
+      "text": "Country of Origin: India",
+      "confidence": 0.9939649105072021,
+      "bbox": [
+        38,
+        501,
+        303,
+        528
+      ],
+      "polygon": [
+        [
+          38,
+          501
+        ],
+        [
+          303,
+          501
+        ],
+        [
+          303,
+          528
+        ],
+        [
+          38,
+          528
+        ]
+      ]
+    }
+  ],
+  "detection_count": 10,
+  "preprocessing_applied": false,
+  "error": null
+}

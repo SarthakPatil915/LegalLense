@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org",
+  "ruleset_id": "IN-LM-RULES-2011",
+  "title": "Legal Metrology Rules 2011 Ruleset",
+  "jurisdiction": "IN",
+  "version": "2026.1.0",
+  "last_updated": "2026-09-04",
+  "frameworks": [
+    {
+      "name": "Legal Metrology (Packaged Commodities) Rules, 2011",
+      "scope": "Pre-packaged commodities intended for retail sale, wholesale, or import",
+      "rules": [
+        {
+          "rule_id": "LMPC-R6-MANDATORY-DECLARATIONS",
+          "description": "Every retail package must carry specified declarations on the principal display panel.",
+          "status": "Mandatory",
+          "required_fields": [
+            "manufacturer_packer_importer_details",
+            "country_of_origin",
+            "common_generic_name_of_commodity",
+            "net_quantity",
+            "month_and_year_of_manufacture_or_packing",
+            "maximum_retail_price_mrp",
+            "unit_sale_price",
+            "consumer_care_details"
+          ],
+          "validations": {
+            "mrp_format": {
+              "regex": "^Rs\\.\\s?\\d+(\\.\\d{2})?|₹\\s?\\d+(\\.\\d{2})?$",
+              "text_requirement": "Must state 'Maximum Retail Price' or 'MRP' and include all taxes."
+            },
+            "consumer_care_fields": ["name", "address", "telephone_number", "email_address"]
+          }
+        },
+        {
+          "rule_id": "LMPC-R11-NET-QUANTITY-EXCLUSION",
+          "description": "The net quantity declaration must exclude the weight of wrappers or packaging materials.",
+          "status": "Mandatory",
+          "logic": "net_quantity == total_package_weight - wrapper_packaging_weight",
+          "allowable_error": "Must conform to the statistical tolerances specified in the First and Second Schedules."
+        },
+        {
+          "rule_id": "LMPC-R24-WHOLESALE-DECLARATIONS",
+          "description": "Every wholesale package must display specific identification and quantity definitions.",
+          "status": "Mandatory",
+          "required_fields": ["name_and_address_of_manufacturer_or_packer", "identity_of_commodity", "total_number_of_retail_packages_or_net_quantity"]
+        }
+      ]
+    },
+    {
+      "name": "Legal Metrology (General) Rules, 2011",
+      "scope": "Specifications and verification of weighing and measuring instruments",
+      "rules": [
+        {
+          "rule_id": "LMGEN-R12-VERIFICATION-INTERVALS",
+          "description": "Weighing and measuring instruments must be periodically verified.",
+          "status": "Mandatory",
+          "intervals": [
+            {"instrument_category": "Weights, capacity measures, or length measures", "verification_period_months": 24},
+            {"instrument_category": "Weighing instruments, petrol pumps, or digital indicators", "verification_period_months": 12}
+          ]
+        },
+        {
+          "rule_id": "LMGEN-R14-STAMPING-SEALING",
+          "description": "Every instrument verified must be stamped and sealed by a Legal Metrology Officer with a verification mark.",
+          "status": "Mandatory",
+          "validation_criteria": {"requires_physical_seal": true, "requires_certificate_of_verification": true}
+        }
+      ]
+    }
+  ],
+  "validation_profiles": {
+    "e_commerce_product_listing": {"evaluate_rules": ["LMPC-R6-MANDATORY-DECLARATIONS"], "fail_on_missing_field": "TRIGGER_COMPLIANCE_HOLD"},
+    "wholesale_package": {"evaluate_rules": ["LMPC-R24-WHOLESALE-DECLARATIONS"]},
+    "pos_hardware_audit": {"evaluate_rules": ["LMGEN-R12-VERIFICATION-INTERVALS", "LMGEN-R14-STAMPING-SEALING"]}
+  }
+}
