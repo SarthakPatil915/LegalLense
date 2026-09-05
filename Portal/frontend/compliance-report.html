@@ -393,10 +393,49 @@
                         function renderSourceEvidenceBoxes() {
                                 sourceEvidenceBoxes.innerHTML = '';
                                 var detections = Array.isArray(scan.detections) ? scan.detections : ((scan.ocr && scan.ocr.detections) || []);
+                                var rule6 = scan.compliance && Array.isArray(scan.compliance.rule_results)
+                                        ? scan.compliance.rule_results.find(function (rule) { return rule.rule_id === 'LMPC-R6-MANDATORY-DECLARATIONS'; })
+                                        : null;
+                                var rule6Aliases = [
+                                        /manufacturer|packer|importer|manufactured\s+by|packed\s+by/i,
+                                        /country\s+of\s+origin|made\s+in/i,
+                                        /product\s+name|commodity|generic\s+name/i,
+                                        /net\s+(quantity|qty|weight|wt)/i,
+                                        /date\s+of\s+manufacture|manufactur|mfg|packed\s+on|packing\s+date/i,
+                                        /maximum\s+retail\s+price|m\.?r\.?p\.?/i,
+                                        /unit\s+sale\s+price|price\s+per|\/\s*(kg|g|l|litre)/i,
+                                        /consumer\s+care|customer\s+(care|service)|helpline|toll\s*free/i
+                                ];
+                                function rule6FieldValues() {
+                                        if (!rule6 || !rule6.required_fields) return [];
+                                        var values = [];
+                                        function collect(value) {
+                                                if (value == null) return;
+                                                if (typeof value === 'object') {
+                                                        Object.keys(value).forEach(function (key) { collect(value[key]); });
+                                                } else if (String(value).trim().length >= 4) {
+                                                        values.push(String(value).trim().toLowerCase());
+                                                }
+                                        }
+                                        Object.keys(rule6.required_fields).forEach(function (name) {
+                                                collect(rule6.required_fields[name].value);
+                                        });
+                                        return values;
+                                }
+                                var rule6Values = rule6FieldValues();
+                                function isRule6Detection(detection) {
+                                        if (!rule6) return false;
+                                        var text = String(detection.text || '').trim().toLowerCase();
+                                        if (!text) return false;
+                                        return rule6Aliases.some(function (alias) { return alias.test(text); }) || rule6Values.some(function (value) {
+                                                return text.indexOf(value) !== -1 || value.indexOf(text) !== -1;
+                                        });
+                                }
                                 var naturalWidth = sourceImage.naturalWidth;
                                 var naturalHeight = sourceImage.naturalHeight;
                                 if (!naturalWidth || !naturalHeight) return;
                                 detections.forEach(function (detection) {
+                                        if (!isRule6Detection(detection)) return;
                                         var bbox = detection.bbox;
                                         if (!Array.isArray(bbox) || bbox.length !== 4) return;
                                         var x1 = Math.max(0, Math.min(naturalWidth, Number(bbox[0])));

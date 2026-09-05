@@ -27,6 +27,26 @@ def test_missing_mrp_is_non_compliant():
     assert ComplianceEngine().evaluate(data, "e_commerce_product_listing").overall_status == "NON_COMPLIANT"
 
 
+def test_ocr_mrp_without_currency_is_detected():
+    data = ocr(full_text="MRP: 149\nConsumer Care: 1800-123-4567\nEmail: care@example.com")
+    data["fields"] = {}
+    data["detections"] = [{"confidence": 0.98}]
+    result = ComplianceEngine().evaluate(data, "e_commerce_product_listing")
+    mrp = result.rule_results[0].required_fields["maximum_retail_price_mrp"]
+    assert mrp.status == "PASS"
+    assert mrp.value["normalized_value"] == 149
+
+
+def test_ocr_consumer_care_reads_email_on_next_line():
+    data = ocr(full_text="MRP: Rs. 149\nConsumer Care: 1800-123-4567\nEmail: care@example.com")
+    data["fields"] = {}
+    data["detections"] = [{"confidence": 0.98}]
+    result = ComplianceEngine().evaluate(data, "e_commerce_product_listing")
+    care = result.rule_results[0].required_fields["consumer_care_details"]
+    assert care.value["telephone_number"] == "1800-123-4567"
+    assert care.value["email_address"] == "care@example.com"
+
+
 def test_missing_consumer_email_is_partial():
     data = ocr()
     data["fields"]["consumer_care_details"]["value"]["email_address"] = None

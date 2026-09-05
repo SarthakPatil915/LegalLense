@@ -40,6 +40,44 @@ def _text_and_confidence(ocr_result: dict[str, Any]) -> tuple[str, float]:
     return text, confidence
 
 
+def _mrp_amounts(value: str) -> list[str]:
+    currency_amounts = re.findall(r"(?:₹|Rs\.?|INR)\s*([0-9]+(?:[.,][0-9]{1,2})?)", value, re.I)
+    if currency_amounts:
+        return currency_amounts
+
+    label_amount = re.search(
+        r"(?:maximum\s+retail\s+price|m\.?r\.?p\.?)\s*[:\-]?\s*([0-9]+(?:[.,][0-9]{1,2})?)",
+        value,
+        re.I,
+    )
+    return [label_amount.group(1)] if label_amount else []
+
+
+def _care_block(lines: list[str]) -> str | None:
+    start = next(
+        (index for index, line in enumerate(lines) if re.search(
+            r"(?:consumer|customer)\s+care|customer\s+service|helpline|toll\s*free|contact\s+us",
+            line,
+            re.I,
+        )),
+        None,
+    )
+    if start is None:
+        return None
+
+    block = [lines[start]]
+    declaration = re.compile(
+        r"(?:mrp|maximum\s+retail|net\s+(?:quantity|qty|weight)|country\s+of\s+origin|"
+        r"manufactur|packed?\s+on|mfg|best\s+before|made\s+in)",
+        re.I,
+    )
+    for line in lines[start + 1:start + 4]:
+        if declaration.search(line):
+            break
+        block.append(line)
+    return "\n".join(block)
+
+
 def normalize_ocr_result(ocr_result: dict[str, Any], document_id: str | None = None) -> NormalizedOCRResult:
     """Create a derived view of OCR data; the supplied OCR dictionary is never mutated."""
     raw_text, average_confidence = _text_and_confidence(ocr_result)
@@ -55,20 +93,26 @@ def normalize_ocr_result(ocr_result: dict[str, Any], document_id: str | None = N
             value = line
         fields[field_name] = NormalizedField(value=value, detected=match is not None, confidence=average_confidence)
 
-    mrp_line = next((line.strip() for line in raw_text.splitlines() if re.search(r"maximum\s+retail\s+price|m\.?r\.?p\.?", line, re.I)), None)
+    lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
+    mrp_index = next((index for index, line in enumerate(lines) if re.search(r"maximum\s+retail\s+price|m\.?r\.?p\.?", line, re.I)), None)
+    mrp_line = None
+    if mrp_index is not None:
+        mrp_line = lines[mrp_index]
+        if not _mrp_amounts(mrp_line) and mrp_index + 1 < len(lines):
+            mrp_line = f"{mrp_line} {lines[mrp_index + 1]}"
     if mrp_line:
         fields["maximum_retail_price_mrp"] = NormalizedField(value=mrp_line, detected=True, confidence=average_confidence)
-    elif len(re.findall(r"(?:₹|Rs\.?|INR)\s*[0-9]+(?:\.[0-9]{1,2})?", raw_text, re.I)) != 1 or re.search(r"unit\s+sale|price\s+per|/kg|/g|/l", raw_text, re.I):
+    elif len(re.findall(r"(?:₹|Rs\.?|INR)\s*[0-9]+(?:[.,][0-9]{1,2})?", raw_text, re.I)) != 1 or re.search(r"unit\s+sale|price\s+per|/kg|/g|/l", raw_text, re.I):
         fields["maximum_retail_price_mrp"] = NormalizedField()
 
-    care_match = re.search(r"(?:consumer|customer)\s+care\s*[:\-]?\s*(.+)", raw_text, re.I)
-    if care_match:
-        care_text = care_match.group(1)
+    care_text = _care_block(lines)
+    if care_text:
+        care_text = re.sub(r"^(?:consumer|customer)\s+care|customer\s+service|helpline|toll\s*free|contact\s+us\s*[:-]?", "", care_text, flags=re.I).strip(" :-\n")
         phone = re.search(r"(?:\+91[\s-]?)?[0-9][0-9\s-]{6,14}[0-9]", care_text)
         email = re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", care_text)
         fields["consumer_care_details"] = NormalizedField(
             value={
-                "name": care_text.split()[0] if care_text.split() else None,
+                "name": None,
                 "address": care_text,
                 "telephone_number": phone.group(0) if phone else None,
                 "email_address": email.group(0) if email else None,
@@ -108,7 +152,7 @@ def _mrp_result(field: NormalizedField, requirement: str) -> tuple[FieldResult, 
         result = FieldResult(status="NEEDS_MANUAL_VERIFICATION", value=field.value, confidence=field.confidence, explanation="MRP OCR confidence is below the verification threshold.")
         return result, Evidence(requirement=requirement, ocr_evidence=str(field.value), validation="Low-confidence OCR", result="NEEDS_MANUAL_VERIFICATION")
     value = str(field.value)
-    amounts = re.findall(r"(?:₹|Rs\.?|INR)\s*([0-9]+(?:\.[0-9]{1,2})?)", value, re.I)
+    amounts = _mrp_amounts(value)
     has_label = bool(re.search(r"(?:maximum\s+retail\s+price|m\.?r\.?p\.?)", value, re.I))
     if not amounts:
         result = FieldResult(status="FAIL", value=value, explanation="The detected MRP does not contain a valid INR amount.")
@@ -119,8 +163,8 @@ def _mrp_result(field: NormalizedField, requirement: str) -> tuple[FieldResult, 
     if not has_label:
         result = FieldResult(status="NEEDS_MANUAL_VERIFICATION", value=value, confidence=field.confidence, explanation="An amount was detected, but the required MRP wording was not detected.")
         return result, Evidence(requirement=requirement, ocr_evidence=value, validation="Valid amount; MRP wording absent", result="NEEDS_MANUAL_VERIFICATION")
-    result = FieldResult(status="PASS", value={"detected_value": value, "normalized_value": float(amounts[0]), "currency": "INR"}, confidence=field.confidence, explanation="Valid INR MRP amount and MRP wording detected.")
-    return result, Evidence(requirement=requirement, ocr_evidence=value, validation="Valid INR amount and MRP keyword", result="PASS")
+    result = FieldResult(status="PASS", value={"detected_value": value, "normalized_value": float(amounts[0].replace(",", "")), "currency": "INR"}, confidence=field.confidence, explanation="Valid MRP amount and MRP wording detected.")
+    return result, Evidence(requirement=requirement, ocr_evidence=value, validation="Valid MRP amount and keyword", result="PASS")
 
 
 def _rule_result(rule: dict[str, Any], normalized: NormalizedOCRResult) -> RuleResult:
