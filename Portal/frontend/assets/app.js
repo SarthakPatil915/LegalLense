@@ -1,4 +1,4 @@
-/* LegalLense shared client-side app layer.
+/* LegalLens shared client-side app layer.
    No backend exists yet, so this module provides a mock/local data + auth
    layer (localStorage for data, sessionStorage for the logged-in session)
    that every page in the portal links against. Keeps IDs consistent across

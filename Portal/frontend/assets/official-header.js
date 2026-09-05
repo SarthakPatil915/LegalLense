@@ -41,8 +41,8 @@
     }
     header.className = "ll-official-header";
     header.innerHTML =
-      '<a class="ll-official-brand" href="official-dashboard.html" aria-label="LegalLense Official Dashboard">' +
-        '<span class="material-symbols-outlined">policy</span><span>LegalLense</span>' +
+      '<a class="ll-official-brand" href="official-dashboard.html" aria-label="LegalLens Official Dashboard">' +
+        '<img src="assets/page-previews/Logo.png" alt="LegalLens" style="display:block;width:auto;height:40px;max-width:180px;object-fit:contain" />' +
       '</a>' +
       '<nav class="ll-official-nav" aria-label="Official navigation">' +
         '<a href="official-dashboard.html">Dashboard</a>' +

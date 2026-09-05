@@ -47,8 +47,8 @@
     }
     header.className = "ll-manufacturer-header";
     header.innerHTML =
-      '<a class="ll-manufacturer-brand" href="manufacturer-dashboard.html" aria-label="LegalLense Manufacturer Dashboard">' +
-        '<span class="material-symbols-outlined">policy</span><span>LegalLense</span>' +
+      '<a class="ll-manufacturer-brand" href="manufacturer-dashboard.html" aria-label="LegalLens Manufacturer Dashboard">' +
+        '<img src="assets/page-previews/Logo.png" alt="LegalLens" style="display:block;width:auto;height:40px;max-width:180px;object-fit:contain" />' +
       '</a>' +
       '<nav class="ll-manufacturer-nav" aria-label="Manufacturer navigation">' +
         '<a href="manufacturer-dashboard.html">Dashboard</a>' +

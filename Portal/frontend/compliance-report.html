@@ -3,7 +3,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Compliance Report | LegalLense</title>
+<title>Compliance Report | LegalLens</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -198,7 +198,7 @@
 <div class="flex items-center gap-3">
 <img alt="Department of Consumer Affairs Logo" class="w-10 h-10 object-contain rounded-full bg-white/10 p-1" data-alt="Official seal or logo of the Department of Consumer Affairs, Government of India. The logo should feature a minimalist, modern, corporate aesthetic suitable for a high-stakes digital compliance portal, designed in high contrast white and teal on a navy blue background. The style should be authoritative and clean." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZPr2u3uPN8MUz7VLXgwFuZStxkpPYE-z0daP8AsPdAUiEq6AFFpmHbFQNC-t_VYKqbMDBYS-eWkFx8H_udI_PSvgqX41GYU8U1AsQ6W5EK1gweK6Ke4VrEErsEvNuQWj5C5XEiF7Knc5rUbwBVL_WO_IqODHE8BE6xBIVTEGmp23uqNnmYpgHEsPEzizznVuO--els9KCBsv1OYKZo1U7g70h4QXsb1h4KDABB8xe60L1dWQ0MwHv"/>
 <div>
-<h1 class="text-headline-md font-headline-md font-bold text-on-primary">LegalLense</h1>
+<h1 class="text-headline-md font-headline-md font-bold text-on-primary">LegalLens</h1>
 <p class="text-label-md font-label-md text-on-primary/70">Govt. of India Portal</p>
 </div>
 </div>
@@ -245,7 +245,7 @@
 <!-- TopAppBar -->
 <header class="bg-surface flex justify-between items-center h-16 px-8 sticky top-0 z-40 border-b border-outline-variant transition-all duration-200 ease-in-out shadow-sm">
 <div class="flex-1 flex items-center gap-8">
-<h2 class="text-headline-md font-headline-md font-black text-primary hidden lg:block">LegalLense</h2>
+<h2 class="text-headline-md font-headline-md font-black text-primary hidden lg:block">LegalLens</h2>
 <div class="hidden md:flex gap-6">
 <a class="text-on-surface-variant font-medium text-body-md font-body-md hover:text-primary hover:bg-surface-container-low px-2 py-1 rounded transition-colors" href="official-dashboard.html">Official Dashboard</a>
 <a class="text-on-surface-variant font-medium text-body-md font-body-md hover:text-primary hover:bg-surface-container-low px-2 py-1 rounded transition-colors" href="#" onclick="return LL.comingSoon(event,'Departmental Guidelines')">Departmental Guidelines</a>
@@ -353,7 +353,7 @@
 </div>
 <section id="export-details" aria-label="Complete compliance report export">
         <div class="export-cover">
-                <div class="export-cover-header"><h1>LegalLense Compliance Report</h1><p>Government of India | Department of Consumer Affairs</p></div>
+                <div class="export-cover-header"><h1>LegalLens Compliance Report</h1><p>Government of India | Department of Consumer Affairs</p></div>
                 <div class="export-barcode-wrap"><svg class="export-barcode" id="export-barcode" aria-label="Report barcode"></svg><small id="export-barcode-caption"></small></div>
                 <div id="export-summary"></div>
                 <div class="export-result" id="export-result"></div>
@@ -553,11 +553,11 @@
                                 getOfficialName().then(function (officialName) {
                                         populateExportDetails(officialName);
                                         return imageAsDataUrl().catch(function () { return sourceImage.src; }).then(function (imageData) {
-                                                var reportHtml = '<!doctype html><html><head><meta charset="utf-8"><title>LegalLense Compliance Report</title><style>@page{size:A4;margin:12mm}body{font:12px/1.35 Arial,sans-serif;color:#191c1d;margin:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1{margin:0 0 3px;color:#00274a;font-size:14px}h2{margin:10px 0 4px;color:#00274a;font-size:13px}h3{margin:7px 0 3px;font-size:12px}p{margin:3px 0}.export-cover{min-height:250mm;break-after:page;page-break-after:always}.export-cover-header{border-bottom:3px solid #f97316;padding-bottom:8px;margin-bottom:8px}.export-result{display:inline-block;margin:5px 0 8px;padding:5px 10px;color:#fff;background:#006a6a;font-weight:700;border-radius:3px}.export-barcode-wrap{float:right;width:180px;margin:0 0 5px 12px;text-align:center}.export-barcode{display:block;width:180px;height:45px}.export-image-section{clear:both;break-inside:avoid;page-break-inside:avoid;margin:8px 0}.export-image{display:block;width:auto;max-width:100%;max-height:520px;margin:6px auto;object-fit:contain}.export-details-page{break-before:page;page-break-before:always}.export-section{margin:8px 0;break-inside:avoid}table{width:100%;border-collapse:collapse;margin:5px 0 8px;font-size:12px}th,td{border:1px solid #c3c6d0;padding:3px 5px;text-align:left;vertical-align:top}th{background:#edeeef}</style></head><body>' + document.getElementById('export-details').innerHTML.replace(sourceImage.src, imageData) + '</body></html>';
+                                                var reportHtml = '<!doctype html><html><head><meta charset="utf-8"><title>LegalLens Compliance Report</title><style>@page{size:A4;margin:12mm}body{font:12px/1.35 Arial,sans-serif;color:#191c1d;margin:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1{margin:0 0 3px;color:#00274a;font-size:14px}h2{margin:10px 0 4px;color:#00274a;font-size:13px}h3{margin:7px 0 3px;font-size:12px}p{margin:3px 0}.export-cover{min-height:250mm;break-after:page;page-break-after:always}.export-cover-header{border-bottom:3px solid #f97316;padding-bottom:8px;margin-bottom:8px}.export-result{display:inline-block;margin:5px 0 8px;padding:5px 10px;color:#fff;background:#006a6a;font-weight:700;border-radius:3px}.export-barcode-wrap{float:right;width:180px;margin:0 0 5px 12px;text-align:center}.export-barcode{display:block;width:180px;height:45px}.export-image-section{clear:both;break-inside:avoid;page-break-inside:avoid;margin:8px 0}.export-image{display:block;width:auto;max-width:100%;max-height:520px;margin:6px auto;object-fit:contain}.export-details-page{break-before:page;page-break-before:always}.export-section{margin:8px 0;break-inside:avoid}table{width:100%;border-collapse:collapse;margin:5px 0 8px;font-size:12px}th,td{border:1px solid #c3c6d0;padding:3px 5px;text-align:left;vertical-align:top}th{background:#edeeef}</style></head><body>' + document.getElementById('export-details').innerHTML.replace(sourceImage.src, imageData) + '</body></html>';
                                                 var blob = new Blob([reportHtml], { type: 'application/msword' });
                                                 var link = document.createElement('a');
                                                 link.href = URL.createObjectURL(blob);
-                                                link.download = 'LegalLense-' + (scan.id || 'compliance-report') + '.doc';
+                                                link.download = 'LegalLens-' + (scan.id || 'compliance-report') + '.doc';
                                                 link.click();
                                                 URL.revokeObjectURL(link.href);
                                         });
@@ -566,7 +566,7 @@
                         document.getElementById('export-pdf-btn').addEventListener('click', function () {
                                 getOfficialName().then(function (officialName) {
                                         populateExportDetails(officialName);
-                                        document.title = 'LegalLense Compliance Report - ' + scan.id;
+                                        document.title = 'LegalLens Compliance Report - ' + scan.id;
                                         window.print();
                                 });
                         });

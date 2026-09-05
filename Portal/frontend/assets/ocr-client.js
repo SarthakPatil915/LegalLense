@@ -1,4 +1,4 @@
-/* Thin fetch wrapper for the LegalLense OCR backend (FastAPI + PaddleOCR).
+/* Thin fetch wrapper for the LegalLens OCR backend (FastAPI + PaddleOCR).
    Kept separate from app.js (the local mock-data/session layer) since this
    is the one module in the frontend that actually talks to a real server. */
 (function (global) {
