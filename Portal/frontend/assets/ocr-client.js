@@ -71,11 +71,11 @@
   }
 
   function getScans(baseUrl) {
-    return fetch((baseUrl || DEFAULT_BASE_URL) + "/api/scans", { credentials: "include" }).then(function (response) { return response.json(); });
+    return fetch((baseUrl || DEFAULT_BASE_URL) + "/api/scans", { credentials: "include", cache: "no-store" }).then(function (response) { return response.json(); });
   }
 
   function getScan(id, baseUrl) {
-    return fetch((baseUrl || DEFAULT_BASE_URL) + "/api/scans/" + encodeURIComponent(id), { credentials: "include" }).then(function (response) {
+    return fetch((baseUrl || DEFAULT_BASE_URL) + "/api/scans/" + encodeURIComponent(id), { credentials: "include", cache: "no-store" }).then(function (response) {
       if (!response.ok) return null;
       return response.json();
     });

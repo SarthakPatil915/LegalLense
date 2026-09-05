@@ -293,7 +293,7 @@
         var escalated = cases.filter(function (c) { return c.status === 'escalated' || c.status === 'under_review'; }).length;
         var rate = scored ? Math.round((compliant / scored) * 100) : 0;
 
-        document.getElementById('stat-total-scans').textContent = liveStats.totalScans;
+        document.getElementById('stat-total-scans').textContent = scansToday.length;
         document.getElementById('stat-open-violations').textContent = liveStats.openViolations;
         document.getElementById('stat-escalated-cases').textContent = escalated;
         document.getElementById('stat-compliance-rate').textContent = rate + '%';

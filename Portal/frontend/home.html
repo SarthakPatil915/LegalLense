@@ -155,10 +155,12 @@
         }
     </script>
 <style>
+                @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
+                        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             background-color: theme('colors.background');
             color: theme('colors.on-background');
+                        overflow-x: hidden;
         }
         .hero-gradient {
             background: linear-gradient(135deg, theme('colors.primary-container') 0%, theme('colors.primary') 100%);
@@ -170,11 +172,40 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+                .landing-mono { font-family: 'JetBrains Mono', monospace; }
+                .landing-grid {
+                        background-image: linear-gradient(rgba(0,39,74,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(0,39,74,.045) 1px, transparent 1px);
+                        background-size: 32px 32px;
+                }
+                .landing-scan-line { animation: landingScan 4.5s ease-in-out infinite; }
+                @keyframes landingScan { 0%, 100% { transform: translateY(0); opacity: .35; } 50% { transform: translateY(300px); opacity: .95; } }
+                .landing-pulse { animation: landingPulse 2.2s ease-out infinite; }
+                @keyframes landingPulse { from { transform: scale(1); opacity: .65; } to { transform: scale(2.4); opacity: 0; } }
+                .landing-reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+                .landing-reveal.is-visible { opacity: 1; transform: translateY(0); }
+                .landing-loader-hidden { opacity: 0; pointer-events: none; }
+                @media (prefers-reduced-motion: reduce) {
+                        .landing-scan-line, .landing-pulse { animation: none; }
+                        .landing-reveal { opacity: 1; transform: none; transition: none; }
+                }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
+<div class="fixed inset-0 z-[60] flex flex-col justify-between p-8 md:p-12 bg-white border-b border-outline-variant transition-opacity duration-700" id="landing-loader">
+<div class="flex items-center justify-between gap-4">
+<div class="landing-mono text-xs font-bold tracking-[.18em] text-secondary uppercase"><span class="inline-block w-2 h-2 rounded-full bg-secondary mr-2"></span>System Initialization</div>
+<button class="landing-mono text-xs text-on-surface-variant border border-outline-variant rounded-full px-3 py-1.5 hover:text-primary" id="skip-landing-loader" type="button">Skip intro [Esc]</button>
+</div>
+<div class="max-w-xl w-full mx-auto text-center">
+<p class="landing-mono text-xs font-bold tracking-[.16em] text-secondary mb-6">LEGAL METROLOGY SYSTEM READY</p>
+<div class="landing-mono text-xl md:text-3xl font-bold text-primary mb-6">OCR <span class="text-outline-variant">---</span> RULE ENGINE <span class="text-outline-variant">---</span> LEGAL CHECK</div>
+<div class="h-1.5 rounded-full bg-surface-container border border-outline-variant overflow-hidden"><div class="h-full bg-primary rounded-full transition-[width] duration-100" id="landing-loader-bar" style="width:0%"></div></div>
+<div class="landing-mono text-xs text-on-surface-variant flex justify-between mt-3"><span id="landing-loader-status">INITIALIZING SENSORS...</span><strong class="text-primary" id="landing-loader-percent">0%</strong></div>
+</div>
+<div class="landing-mono text-center text-[10px] tracking-[.12em] text-outline">STANDARD COMPLIANCE: INDIA LEGAL METROLOGY RULES, 2011</div>
+</div>
 <!-- Top App Bar (Simplified for Landing Page) -->
-<header class="bg-surface border-b border-outline-variant h-16 sticky top-0 z-40 px-8 flex justify-between items-center w-full max-w-[1440px] mx-auto">
+<header class="bg-surface/90 backdrop-blur-md border-b border-outline-variant h-16 sticky top-0 z-40 px-8 flex justify-between items-center w-full max-w-[1440px] mx-auto">
 <div class="flex items-center gap-3">
 <img alt="Government Logo" class="h-10 w-10 object-contain rounded-full" data-alt="The official emblem of the Government of India, featuring the Lion Capital of Ashoka. The emblem is rendered in a crisp, dark navy blue outline style, suitable for a modern corporate web header. The background is pristine white. The mood is authoritative and official, aligned with a high-stakes compliance portal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH0SO1bvaAhvJx7XHZ1iu0XThnambqEWeeRsHkf9wS-K9noyjW5XpVXoeDYm2jlDlvWl7fOy6Y1yQx1ZY4Z5JqU6-8j_U2Yv_Aij90ALJgUtcrzRw01Kx_nvovUDKnYol8IPGNlA_DByAsrhnj1EZIZPyfHqaKaJuHr8kEka4ivZUAtr3sweypiyKCVG3r06QxV5qbeY3yCl1Gq7IEDEbiLTuphSdnFPldcVLSQLBvqxpVPsaSL7kz"/>
 <span class="text-headline-md font-headline-md font-bold text-primary">LegalLense</span>
@@ -185,13 +216,24 @@
 </div>
 </header>
 <!-- Main Content Canvas -->
-<main class="flex-grow w-full max-w-[1440px] mx-auto px-margin-page md:px-margin-page flex flex-col items-center pt-16 pb-24">
+<main class="flex-grow w-full max-w-[1440px] mx-auto px-margin-page md:px-margin-page flex flex-col items-center pt-16 pb-24 landing-grid">
 <!-- Hero Section -->
-<section class="w-full flex flex-col items-center text-center max-w-4xl mb-24">
-<h1 class="text-display-lg font-display-lg text-primary mb-6">LegalLense</h1>
+<section class="w-full flex flex-col items-center text-center max-w-5xl mb-24 landing-reveal">
+<div class="landing-mono inline-flex items-center gap-2 text-xs font-bold tracking-[.16em] uppercase text-secondary border border-outline-variant bg-surface px-3 py-1.5 rounded-full mb-6"><span class="w-2 h-2 rounded-full bg-secondary"></span>Automated Legal Metrology Compliance</div>
+<h1 class="text-display-lg font-display-lg text-primary mb-4">LegalLense</h1>
 <p class="text-headline-md font-headline-md text-on-surface-variant mb-12 max-w-3xl">
                 Advanced digital compliance scanning for the Legal Metrology (Packaged Commodities) Rules, 2011.
             </p>
+<div class="relative w-full max-w-4xl h-[320px] bg-surface border border-outline-variant rounded-2xl overflow-hidden shadow-sm mb-10 text-left">
+<div class="absolute top-4 left-4 z-10 landing-mono text-[10px] text-primary bg-surface/95 px-2.5 py-1 rounded border border-outline-variant">[TARGET: PACKAGED COMMODITY LABEL]</div>
+<div class="absolute bottom-4 right-4 z-10 landing-mono text-[10px] text-primary bg-surface/95 px-3 py-1.5 rounded border border-outline-variant flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary"></span>SCAN ACTIVE: RULE ENGINE READY</div>
+<div class="landing-scan-line absolute z-10 left-0 right-0 top-4 h-0.5 bg-secondary"></div>
+<div class="absolute inset-0 flex items-center justify-center p-8">
+<div class="relative w-full max-w-2xl border border-dashed border-outline-variant rounded-xl bg-surface-container-lowest p-8 md:p-12">
+<div class="absolute inset-8 border border-secondary/40 rounded-lg"></div><div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-secondary"><div class="landing-pulse absolute inset-0 rounded-full border border-secondary"></div></div>
+<div class="relative landing-mono text-primary text-center"><div class="text-xl md:text-3xl font-bold tracking-wider">PRODUCT LABEL</div><div class="text-sm md:text-base text-secondary mt-4">NET QTY 500 g &nbsp; | &nbsp; MRP ₹199</div><div class="grid grid-cols-3 gap-3 mt-8 text-[10px] md:text-xs"><span class="border border-secondary/50 bg-secondary/5 rounded p-2">IDENTITY ✓</span><span class="border border-secondary/50 bg-secondary/5 rounded p-2">QUANTITY ✓</span><span class="border border-secondary/50 bg-secondary/5 rounded p-2">MRP ✓</span></div></div>
+</div></div>
+</div>
 <div class="flex flex-col sm:flex-row gap-6 w-full justify-center">
 <button class="bg-secondary hover:bg-on-secondary-fixed-variant text-on-secondary text-body-lg font-body-lg font-semibold py-4 px-8 rounded-lg min-h-[44px] transition-colors shadow-sm flex items-center justify-center gap-2" onclick="location.href='login.html?role=official'">
 <span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
@@ -205,14 +247,14 @@
 <p class="mt-6 text-body-md font-body-md text-on-surface-variant">New manufacturer? <a class="text-secondary font-semibold hover:underline" href="registration.html">Register your company</a></p>
 </section>
 <!-- How it Works Section - Bento Grid Style -->
-<section class="w-full max-w-5xl mt-12">
+<section class="w-full max-w-5xl mt-12 landing-reveal">
 <div class="text-center mb-12">
 <h2 class="text-headline-lg font-headline-lg text-primary">How it Works</h2>
 <div class="w-16 h-1 bg-secondary mx-auto mt-4 rounded-full"></div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 <!-- Step 1 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden landing-reveal">
 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-fixed to-primary-container opacity-50"></div>
 <div class="w-20 h-20 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary-container">
 <span class="material-symbols-outlined text-4xl" data-icon="upload_file">upload_file</span>
@@ -223,7 +265,7 @@
                     </p>
 </div>
 <!-- Step 2 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden landing-reveal">
 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-fixed to-secondary opacity-50"></div>
 <div class="w-20 h-20 bg-secondary-fixed rounded-full flex items-center justify-center mb-6 text-secondary">
 <span class="material-symbols-outlined text-4xl" data-icon="document_scanner">document_scanner</span>
@@ -234,7 +276,7 @@
                     </p>
 </div>
 <!-- Step 3 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 card-hover flex flex-col items-center text-center relative overflow-hidden landing-reveal">
 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tertiary-fixed to-tertiary-container opacity-50"></div>
 <div class="w-20 h-20 bg-tertiary-fixed rounded-full flex items-center justify-center mb-6 text-tertiary-container">
 <span class="material-symbols-outlined text-4xl" data-icon="analytics">analytics</span>
@@ -264,5 +306,55 @@
 </div>
 </div>
 </footer>
+<script>
+        (function () {
+                var loader = document.getElementById('landing-loader');
+                var bar = document.getElementById('landing-loader-bar');
+                var percent = document.getElementById('landing-loader-percent');
+                var status = document.getElementById('landing-loader-status');
+                var skip = document.getElementById('skip-landing-loader');
+                var progress = 0;
+                var statuses = ['INITIALIZING SENSORS...', 'INDEXING RULE DICTIONARY...', 'CALIBRATING OCR ENGINE...', 'SYNCING PCR 2011 AMENDMENTS...', 'COMPLIANCE ENGINE READY'];
+                var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                function finishLoader() {
+                        if (!loader) return;
+                        loader.classList.add('landing-loader-hidden');
+                        window.setTimeout(function () { loader.style.display = 'none'; }, 700);
+                }
+
+                function updateLoader(value) {
+                        progress = Math.min(100, value);
+                        bar.style.width = progress + '%';
+                        percent.textContent = progress + '%';
+                        status.textContent = statuses[Math.min(statuses.length - 1, Math.floor(progress / 100 * statuses.length))];
+                        if (progress >= 100) window.setTimeout(finishLoader, reducedMotion ? 0 : 350);
+                }
+
+                if (reducedMotion) {
+                        updateLoader(100);
+                } else {
+                        var interval = window.setInterval(function () {
+                                updateLoader(progress + Math.floor(Math.random() * 8) + 5);
+                                if (progress >= 100) window.clearInterval(interval);
+                        }, 75);
+                        skip.addEventListener('click', function () { window.clearInterval(interval); updateLoader(100); });
+                        window.addEventListener('keydown', function (event) { if (event.key === 'Escape') skip.click(); });
+                }
+
+                var revealObserver = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                                if (entry.isIntersecting) {
+                                        entry.target.classList.add('is-visible');
+                                        revealObserver.unobserve(entry.target);
+                                }
+                        });
+                }, { threshold: 0.12 });
+                document.querySelectorAll('.landing-reveal').forEach(function (element, index) {
+                        element.style.transitionDelay = Math.min(index * 80, 320) + 'ms';
+                        revealObserver.observe(element);
+                });
+        }());
+</script>
 <script src="assets/app.js"></script>
 </body></html>

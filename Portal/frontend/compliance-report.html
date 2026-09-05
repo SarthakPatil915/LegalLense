@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -157,6 +158,37 @@
 <style>
         body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; }
         .bounding-box { border: 2px solid #00274a; position: absolute; background-color: rgba(0, 39, 74, 0.1); }
+        .bounding-box-label { position: absolute; left: -2px; top: -24px; max-width: 240px; padding: 2px 5px; color: #fff; background: #00274a; font: 600 10px/14px Inter, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+        .bounding-box-low-confidence { border-color: #ba1a1a; background-color: rgba(186, 26, 26, 0.12); }
+        .bounding-box-low-confidence .bounding-box-label { background: #ba1a1a; }
+        #source-evidence-viewer:fullscreen { width: 100vw; height: 100vh; border: 0; border-radius: 0; background: #edeeef; z-index: 9999; }
+        #source-evidence-viewer.source-evidence-expanded { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; border-radius: 0; z-index: 9999; }
+        #export-details { display: none; }
+        @media print {
+                @page { size: A4; margin: 12mm; }
+                body { display: block !important; background: #fff !important; color: #191c1d !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                body > aside, body > header, .no-print, #source-evidence-viewer, #report-not-found { display: none !important; }
+                body > div { margin: 0 !important; }
+                main { max-width: none !important; padding: 0 !important; }
+                #report-content { display: none !important; }
+                #export-details { display: block !important; margin: 0; font: 12px/1.35 Arial, sans-serif; }
+                #export-details h1 { margin: 0 0 3px; font-size: 14px; color: #00274a; }
+                #export-details h2 { margin: 10px 0 4px; font-size: 13px; }
+                #export-details h3 { margin: 7px 0 3px; font-size: 12px; }
+                #export-details p { margin: 3px 0; }
+                .export-cover { min-height: 250mm; break-after: page; page-break-after: always; }
+                .export-cover-header { border-bottom: 3px solid #f97316; padding-bottom: 8px; margin-bottom: 8px; }
+                .export-result { display: inline-block; margin: 5px 0 8px; padding: 5px 10px; color: #fff; background: #006a6a; font-weight: 700; border-radius: 3px; }
+                .export-barcode-wrap { float: right; width: 180px; margin: 0 0 5px 12px; text-align: center; }
+                .export-barcode { display: block; width: 180px; height: 45px; }
+                .export-image-section { clear: both; break-inside: avoid; page-break-inside: avoid; margin: 8px 0; }
+                .export-image { display: block; width: auto; max-width: 100%; max-height: 132mm; margin: 6px auto; object-fit: contain; }
+                .export-details-page { break-before: page; page-break-before: always; }
+                .export-section { break-inside: avoid; margin: 8px 0; }
+                .export-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                .export-table th, .export-table td { border: 1px solid #c3c6d0; padding: 3px 5px; text-align: left; vertical-align: top; }
+                .export-table th { background: #edeeef; }
+        }
     </style>
 </head>
 <body class="bg-background text-on-background flex min-h-screen font-body-md">
@@ -271,25 +303,18 @@
 <div class="flex justify-between items-center mb-4">
 <h3 class="text-body-lg font-body-lg font-bold text-primary">Source Evidence</h3>
 <div class="flex gap-2">
-<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-[20px]">zoom_in</span></button>
-<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded"><span class="material-symbols-outlined text-[20px]">zoom_out</span></button>
+<button aria-label="Zoom in" class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded" id="source-zoom-in" title="Zoom in"><span class="material-symbols-outlined text-[20px]">zoom_in</span></button>
+<button aria-label="Zoom out" class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded" id="source-zoom-out" title="Zoom out"><span class="material-symbols-outlined text-[20px]">zoom_out</span></button>
+<button aria-label="Open original image" class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded" id="source-open-original" title="Open original image"><span class="material-symbols-outlined text-[20px]">open_in_new</span></button>
+<button aria-label="View image fullscreen" class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded" id="source-fullscreen" title="View image fullscreen"><span class="material-symbols-outlined text-[20px]">fullscreen</span></button>
 </div>
 </div>
-<div class="relative w-full h-[500px] bg-surface-container-low rounded border border-outline-variant overflow-hidden">
+<div class="relative w-full h-[500px] bg-surface-container-low rounded border border-outline-variant overflow-auto" id="source-evidence-viewer">
 <!-- Image Container -->
-<div class="absolute inset-0 p-4 flex items-center justify-center">
-<div class="relative max-w-full max-h-full">
-<img alt="Product label scan" class="max-w-full max-h-full object-contain shadow-md" id="source-evidence-image"/>
-<!-- Bounding Boxes Overlay (Simulated) -->
-<div class="bounding-box" style="top: 15%; left: 10%; width: 40%; height: 8%;" title="Manufacturer Details Detected">
-<span class="absolute -top-6 left-0 bg-primary text-on-primary text-[10px] px-1 font-mono rounded-sm shadow">MANUFACTURER</span>
-</div>
-<div class="bounding-box border-error bg-error-container/20" style="top: 35%; left: 10%; width: 25%; height: 6%;" title="Net Weight Error">
-<span class="absolute -top-6 left-0 bg-error text-on-error text-[10px] px-1 font-mono rounded-sm shadow">NET_QTY</span>
-</div>
-<div class="bounding-box" style="top: 45%; left: 10%; width: 20%; height: 6%;" title="MRP Detected">
-<span class="absolute -top-6 left-0 bg-primary text-on-primary text-[10px] px-1 font-mono rounded-sm shadow">MRP</span>
-</div>
+<div class="min-h-full min-w-full p-4">
+<div class="relative mx-auto max-w-full" id="source-evidence-image-wrap">
+<img alt="Product label scan" class="block max-w-full h-auto object-contain shadow-md" id="source-evidence-image"/>
+<div aria-label="OCR detected text regions" class="absolute inset-0 pointer-events-none" id="source-evidence-boxes"></div>
 </div>
 </div>
 </div>
@@ -308,13 +333,13 @@
 </div>
 <!-- Footer Actions -->
 <div class="mt-8 pt-6 border-t border-outline-variant flex flex-col sm:flex-row justify-end items-center gap-4">
-<button class="w-full sm:w-auto px-6 py-2.5 rounded border border-primary text-primary hover:bg-surface-container-low transition-colors font-semibold text-body-md font-body-md flex items-center justify-center gap-2" onclick="window.print()">
+<button class="no-print w-full sm:w-auto px-6 py-2.5 rounded border border-primary text-primary hover:bg-surface-container-low transition-colors font-semibold text-body-md font-body-md flex items-center justify-center gap-2" id="export-pdf-btn" title="Print or save this report as PDF">
 <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
-                    Export PDF
+                                        Export PDF
                 </button>
-<button class="w-full sm:w-auto px-6 py-2.5 rounded border border-primary text-primary hover:bg-surface-container-low transition-colors font-semibold text-body-md font-body-md flex items-center justify-center gap-2" onclick="LL.comingSoon(event,'DOCX export')">
+<button class="no-print w-full sm:w-auto px-6 py-2.5 rounded border border-primary text-primary hover:bg-surface-container-low transition-colors font-semibold text-body-md font-body-md flex items-center justify-center gap-2" id="export-doc-btn">
 <span class="material-symbols-outlined text-[20px]">description</span>
-                    Export DOCX
+                                        Export DOC
                 </button>
 <button class="hidden w-full sm:w-auto px-6 py-2.5 rounded border border-primary text-primary hover:bg-surface-container-low transition-colors font-semibold text-body-md font-body-md flex items-center justify-center gap-2" id="view-case-btn">
 <span class="material-symbols-outlined text-[20px]">folder_open</span>
@@ -326,6 +351,19 @@
                 </button>
 </div>
 </div>
+<section id="export-details" aria-label="Complete compliance report export">
+        <div class="export-cover">
+                <div class="export-cover-header"><h1>LegalLense Compliance Report</h1><p>Government of India | Department of Consumer Affairs</p></div>
+                <div class="export-barcode-wrap"><svg class="export-barcode" id="export-barcode" aria-label="Report barcode"></svg><small id="export-barcode-caption"></small></div>
+                <div id="export-summary"></div>
+                <div class="export-result" id="export-result"></div>
+                <div class="export-image-section"><h2>Original Uploaded Product Image</h2><img class="export-image" id="export-image" alt="Original uploaded product image" /></div>
+        </div>
+        <div class="export-details-page">
+                <div class="export-section"><h2>OCR Detected Text</h2><table class="export-table"><thead><tr><th>Detected text</th><th>Confidence</th><th>Coordinates</th></tr></thead><tbody id="export-ocr-rows"></tbody></table></div>
+                <div class="export-section"><h2>Rules and Compliance Results</h2><div id="export-rules"></div></div>
+        </div>
+</section>
 </main>
 <script src="assets/app.js"></script>
 <script src="assets/auth-client.js"></script>
@@ -348,8 +386,152 @@
             document.getElementById('report-product-name').textContent = scan.productName;
             document.getElementById('report-subtitle').textContent = scan.manufacturer + ' • ' + scan.category + ' • Automated packaging scan against Legal Metrology Rules, 2011.';
             var sourceImage = document.getElementById('source-evidence-image');
+                        var sourceImageWrap = document.getElementById('source-evidence-image-wrap');
+                        var sourceEvidenceBoxes = document.getElementById('source-evidence-boxes');
             sourceImage.src = (scan.sourceImageUrl ? 'http://localhost:8000' + scan.sourceImageUrl : 'http://localhost:8000/api/scans/' + encodeURIComponent(scan.id) + '/image');
             sourceImage.alt = scan.fileName ? 'Original product label: ' + scan.fileName : 'Original product label scan';
+                        function renderSourceEvidenceBoxes() {
+                                sourceEvidenceBoxes.innerHTML = '';
+                                var detections = Array.isArray(scan.detections) ? scan.detections : ((scan.ocr && scan.ocr.detections) || []);
+                                var naturalWidth = sourceImage.naturalWidth;
+                                var naturalHeight = sourceImage.naturalHeight;
+                                if (!naturalWidth || !naturalHeight) return;
+                                detections.forEach(function (detection) {
+                                        var bbox = detection.bbox;
+                                        if (!Array.isArray(bbox) || bbox.length !== 4) return;
+                                        var x1 = Math.max(0, Math.min(naturalWidth, Number(bbox[0])));
+                                        var y1 = Math.max(0, Math.min(naturalHeight, Number(bbox[1])));
+                                        var x2 = Math.max(x1, Math.min(naturalWidth, Number(bbox[2])));
+                                        var y2 = Math.max(y1, Math.min(naturalHeight, Number(bbox[3])));
+                                        if (x2 <= x1 || y2 <= y1) return;
+                                        var box = document.createElement('div');
+                                        var lowConfidence = Number(detection.confidence) < 0.7;
+                                        box.className = 'bounding-box' + (lowConfidence ? ' bounding-box-low-confidence' : '');
+                                        box.style.left = (x1 / naturalWidth * 100) + '%';
+                                        box.style.top = (y1 / naturalHeight * 100) + '%';
+                                        box.style.width = ((x2 - x1) / naturalWidth * 100) + '%';
+                                        box.style.height = ((y2 - y1) / naturalHeight * 100) + '%';
+                                        box.title = (detection.text || 'Detected text') + ' (' + Math.round(Number(detection.confidence || 0) * 100) + '%)';
+                                        var label = document.createElement('span');
+                                        label.className = 'bounding-box-label';
+                                        label.textContent = detection.text || 'Detected text';
+                                        box.appendChild(label);
+                                        sourceEvidenceBoxes.appendChild(box);
+                                });
+                        }
+                        sourceImage.addEventListener('load', renderSourceEvidenceBoxes);
+                        if (sourceImage.complete) renderSourceEvidenceBoxes();
+                        var sourceZoom = 1;
+                        function setSourceZoom(nextZoom) {
+                                sourceZoom = Math.max(1, Math.min(4, nextZoom));
+                                sourceImage.style.width = sourceZoom === 1 ? '' : '100%';
+                                sourceImage.style.maxWidth = sourceZoom === 1 ? '' : 'none';
+                                sourceImageWrap.style.width = sourceZoom === 1 ? '' : (sourceZoom * 100) + '%';
+                                renderSourceEvidenceBoxes();
+                        }
+                        document.getElementById('source-zoom-in').addEventListener('click', function () { setSourceZoom(sourceZoom + 0.5); });
+                        document.getElementById('source-zoom-out').addEventListener('click', function () { setSourceZoom(sourceZoom - 0.5); });
+                        document.getElementById('source-open-original').addEventListener('click', function () {
+                                if (sourceImage.src) window.open(sourceImage.src, '_blank', 'noopener');
+                        });
+                        var sourceViewer = document.getElementById('source-evidence-viewer');
+                        var fullscreenButton = document.getElementById('source-fullscreen');
+                        function updateFullscreenButton() {
+                                var isFullscreen = document.fullscreenElement === sourceViewer || sourceViewer.classList.contains('source-evidence-expanded');
+                                fullscreenButton.querySelector('span').textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+                                fullscreenButton.title = isFullscreen ? 'Exit fullscreen' : 'View image fullscreen';
+                                fullscreenButton.setAttribute('aria-label', fullscreenButton.title);
+                        }
+                        fullscreenButton.addEventListener('click', function () {
+                                if (document.fullscreenElement === sourceViewer) {
+                                        document.exitFullscreen();
+                                } else if (sourceViewer.requestFullscreen) {
+                                        sourceViewer.requestFullscreen();
+                                } else {
+                                        sourceViewer.classList.toggle('source-evidence-expanded');
+                                        updateFullscreenButton();
+                                }
+                        });
+                        document.addEventListener('fullscreenchange', updateFullscreenButton);
+
+                        function exportEscape(value) {
+                                return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+                                        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+                                });
+                        }
+                        function exportDetections() {
+                                return Array.isArray(scan.detections) ? scan.detections : ((scan.ocr && scan.ocr.detections) || []);
+                        }
+                        function populateExportDetails(officialName) {
+                                var official = officialName || 'Enforcement Official';
+                                document.getElementById('export-summary').innerHTML =
+                                        '<table class="export-table"><tbody>' +
+                                        '<tr><th>Official</th><td>' + exportEscape(official) + '</td></tr>' +
+                                        '<tr><th>Report ID</th><td>' + exportEscape(scan.id) + '</td></tr>' +
+                                        '<tr><th>Product</th><td>' + exportEscape(scan.productName) + '</td></tr>' +
+                                        '<tr><th>Manufacturer</th><td>' + exportEscape(scan.manufacturer) + '</td></tr>' +
+                                        '<tr><th>Category</th><td>' + exportEscape(scan.category) + '</td></tr>' +
+                                        '<tr><th>Scan date</th><td>' + exportEscape(scan.date ? new Date(scan.date).toLocaleString() : '') + '</td></tr>' +
+                                        '<tr><th>Compliance status</th><td>' + exportEscape(scan.status) + '</td></tr>' +
+                                        '<tr><th>Compliance score</th><td>' + exportEscape(scan.score == null ? 'Pending' : scan.score + '%') + '</td></tr>' +
+                                        '</tbody></table>';
+                                var reportScore = scan.score == null ? 'Pending' : scan.score + '%';
+                                var reportResult = String(scan.status || 'pending').replace(/_/g, ' ').toUpperCase();
+                                document.getElementById('export-result').textContent = 'RESULT: ' + reportResult + ' | SCORE: ' + reportScore;
+                                document.getElementById('export-barcode-caption').textContent = scan.id + ' | ' + reportScore + ' | ' + reportResult;
+                                if (window.JsBarcode) {
+                                        JsBarcode('#export-barcode', scan.id + '|' + reportScore + '|' + reportResult, { format: 'CODE128', width: 1.4, height: 42, displayValue: false, margin: 0, lineColor: '#00274a' });
+                                }
+                                document.getElementById('export-image').src = sourceImage.src;
+                                document.getElementById('export-ocr-rows').innerHTML = exportDetections().map(function (detection) {
+                                        return '<tr><td>' + exportEscape(detection.text) + '</td><td>' + Math.round(Number(detection.confidence || 0) * 100) + '%</td><td>' + exportEscape((detection.bbox || []).join(', ')) + '</td></tr>';
+                                }).join('') || '<tr><td colspan="3">No OCR detections returned.</td></tr>';
+                                var rules = scan.compliance && scan.compliance.rule_results || [];
+                                document.getElementById('export-rules').innerHTML = rules.map(function (rule) {
+                                        var fields = Object.keys(rule.required_fields || {}).map(function (field) {
+                                                var item = rule.required_fields[field] || {};
+                                                return '<tr><td>' + exportEscape(field.replace(/_/g, ' ')) + '</td><td>' + exportEscape(item.value || 'Not detected by OCR') + '</td><td>' + exportEscape(item.status || '') + '</td><td>' + exportEscape(item.explanation || '') + '</td></tr>';
+                                        }).join('');
+                                        return '<h3>' + exportEscape(rule.rule_name || 'Compliance rule') + '</h3><p>' + exportEscape(rule.explanation || '') + '</p>' +
+                                                '<table class="export-table"><thead><tr><th>Field</th><th>Value</th><th>Status</th><th>Explanation</th></tr></thead><tbody>' + (fields || '<tr><td colspan="4">' + exportEscape(rule.recommended_action || 'No field-level results.') + '</td></tr>') + '</tbody></table>';
+                                }).join('') || '<p>No rule results are available for this scan.</p>';
+                        }
+                        function getOfficialName() {
+                                var session = LL.getSession && LL.getSession();
+                                return session && session.name ? Promise.resolve(session.name) : (window.LLAuth ? LLAuth.me().then(function (user) { return user.fullName || user.name || user.email; }).catch(function () { return 'Enforcement Official'; }) : Promise.resolve('Enforcement Official'));
+                        }
+                        function imageAsDataUrl() {
+                                return fetch(sourceImage.src, { credentials: 'include' }).then(function (response) { return response.blob(); }).then(function (blob) {
+                                        return new Promise(function (resolve, reject) {
+                                                var reader = new FileReader();
+                                                reader.onloadend = function () { resolve(reader.result); };
+                                                reader.onerror = reject;
+                                                reader.readAsDataURL(blob);
+                                        });
+                                });
+                        }
+                        function downloadDocument() {
+                                getOfficialName().then(function (officialName) {
+                                        populateExportDetails(officialName);
+                                        return imageAsDataUrl().catch(function () { return sourceImage.src; }).then(function (imageData) {
+                                                var reportHtml = '<!doctype html><html><head><meta charset="utf-8"><title>LegalLense Compliance Report</title><style>@page{size:A4;margin:12mm}body{font:12px/1.35 Arial,sans-serif;color:#191c1d;margin:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1{margin:0 0 3px;color:#00274a;font-size:14px}h2{margin:10px 0 4px;color:#00274a;font-size:13px}h3{margin:7px 0 3px;font-size:12px}p{margin:3px 0}.export-cover{min-height:250mm;break-after:page;page-break-after:always}.export-cover-header{border-bottom:3px solid #f97316;padding-bottom:8px;margin-bottom:8px}.export-result{display:inline-block;margin:5px 0 8px;padding:5px 10px;color:#fff;background:#006a6a;font-weight:700;border-radius:3px}.export-barcode-wrap{float:right;width:180px;margin:0 0 5px 12px;text-align:center}.export-barcode{display:block;width:180px;height:45px}.export-image-section{clear:both;break-inside:avoid;page-break-inside:avoid;margin:8px 0}.export-image{display:block;width:auto;max-width:100%;max-height:520px;margin:6px auto;object-fit:contain}.export-details-page{break-before:page;page-break-before:always}.export-section{margin:8px 0;break-inside:avoid}table{width:100%;border-collapse:collapse;margin:5px 0 8px;font-size:12px}th,td{border:1px solid #c3c6d0;padding:3px 5px;text-align:left;vertical-align:top}th{background:#edeeef}</style></head><body>' + document.getElementById('export-details').innerHTML.replace(sourceImage.src, imageData) + '</body></html>';
+                                                var blob = new Blob([reportHtml], { type: 'application/msword' });
+                                                var link = document.createElement('a');
+                                                link.href = URL.createObjectURL(blob);
+                                                link.download = 'LegalLense-' + (scan.id || 'compliance-report') + '.doc';
+                                                link.click();
+                                                URL.revokeObjectURL(link.href);
+                                        });
+                                });
+                        }
+                        document.getElementById('export-pdf-btn').addEventListener('click', function () {
+                                getOfficialName().then(function (officialName) {
+                                        populateExportDetails(officialName);
+                                        document.title = 'LegalLense Compliance Report - ' + scan.id;
+                                        window.print();
+                                });
+                        });
+                        document.getElementById('export-doc-btn').addEventListener('click', downloadDocument);
 
             var score = scan.score == null ? 0 : scan.score;
             var badge = document.getElementById('report-score-badge');

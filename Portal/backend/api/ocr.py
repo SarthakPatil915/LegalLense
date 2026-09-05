@@ -220,7 +220,10 @@ async def create_scan(
 def list_scans(user: dict[str, Any] = Depends(official_user)):
     """Return persisted scans newest first."""
     scans = get_database().scans.find({"userId": user["_id"]}, {"_id": 0}).sort("date", -1)
-    return [_public_scan(scan) for scan in scans]
+    return JSONResponse(
+        content=[_public_scan(scan) for scan in scans],
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+    )
 
 
 @router.get("/api/scans/{scan_id}")
@@ -229,7 +232,10 @@ def get_scan(scan_id: str, user: dict[str, Any] = Depends(official_user)):
     scan = get_database().scans.find_one({"id": scan_id, "userId": user["_id"]}, {"_id": 0})
     if scan is None:
         return JSONResponse(status_code=404, content={"detail": "Scan not found"})
-    return _public_scan(scan)
+    return JSONResponse(
+        content=_public_scan(scan),
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+    )
 
 
 @router.get("/api/scans/{scan_id}/image")
